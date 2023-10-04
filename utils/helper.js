@@ -92,9 +92,18 @@ const userIdExits = async (emailIdvalue) => {
 };
 
 const invalidPath = (req, res) => {
-  return res.status(404).json({
-    message: 'Resource Not Found',
-  });
+  const queryString = req.originalUrl.split('?')[1]; // Get the query string
+
+  // Check if there are any query parameters after /assignments
+  if (queryString) {
+    return res.status(400).json({
+      message: 'Bad request - Query parameters not allowed after /assignments',
+    });
+  } else {
+    return res.status(404).json({
+      message: 'Resource Not Found ',
+    });
+  }
 };
 
 const methodNotAllowed = (req, res) => {

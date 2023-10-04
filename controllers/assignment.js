@@ -370,6 +370,14 @@ const putAssignmentInfo = async (req, res) => {
       unwantedFields: unwantedFields,
     });
   }
+
+  //Validation for Query String
+  const queryParams = Object.keys(req.query);
+  if (queryParams.length > 0) {
+    return res.status(400).json({
+      message: 'Bad request - Query String not Allowed',
+    });
+  }
   /*
   // Check if the request body is empty
   if (Object.keys(req.body).length === 0) {
