@@ -140,6 +140,14 @@ const createNewAssignment = async (req, res) => {
     ////RECENT CHANGE Oct1 START model NAME and Commented
     //Change string to Date
     const deadlineDate = new Date(req.body.deadline);
+
+    const today = new Date();
+    if (deadlineDate <= today) {
+      return res.status(400).json({
+        message: 'Bad request - Deadline date must be in the future',
+      });
+    }
+
     //NEW CODE ADDED NOW
     let data = await Account.findByPk(idValue);
     console.log('Account Object' + data);
@@ -218,7 +226,7 @@ const getAssignment = async (req, res) => {
       return res.status(400).json({
         message: 'Bad Request-Assignment not found',
       });
-    } else if (existingAssignment) {
+    } /*else if (existingAssignment) {
       let { userName } = getDecryptedCreds(req.headers.authorization);
       //console.log('Email of User' + ' ' + userName);
       let idValue = await validUserId(userName);
@@ -228,13 +236,15 @@ const getAssignment = async (req, res) => {
           message: 'Forbidden-Assignment belongs to another User',
         });
       }
-    }
+    }*/
     let result = {
       id: existingAssignment.dataValues.id,
       name: existingAssignment.dataValues.name,
       points: existingAssignment.dataValues.points,
       num_of_attempts: existingAssignment.dataValues.num_of_attempts,
       deadline: existingAssignment.dataValues.deadline,
+      assignment_created: existingAssignment.assignment_created,
+      assignment_updated: existingAssignment.assignment_updated,
     };
     //helper.logger.info('Product Successfully fetched');
     console.log('Assignment fetched successfully');
@@ -277,11 +287,7 @@ const getAllAssignments = async (req, res) => {
     //RECENT CHNAGE END COMMENTED
     //const account = await Account.findOne({ where: { email: userName } });
     //console.log('User Id' + idValue);
-    let data = await Assignment.findAll({
-      where: {
-        accountId: idValue,
-      },
-    });
+    let data = await Assignment.findAll();
     //console.log('length' + data.length);
     if (!data || data.length === 0) {
       return res.status(404).json({
@@ -321,11 +327,11 @@ const putAssignmentInfo = async (req, res) => {
     !Number.isInteger(req.body.num_of_attemps) ||
     req.body.num_of_attemps < 1 ||
     req.body.num_of_attemps > 100 ||
-    typeof req.body.deadline !== 'string'
+    !isValidISODATE(req.body.deadline)
   ) {
-    console.log('Invalid input');
+    //console.log('Invalid input');
     return res.status(400).json({
-      message: 'Bad request-Invalid Assignment body Parameters',
+      message: 'Bad request-Invalid Assignment Parameters or Empty body',
     });
   }
 
@@ -405,8 +411,15 @@ const putAssignmentInfo = async (req, res) => {
         });
       }
     }
-    console.log('Checks Passed');
+
     const deadlineDate = new Date(req.body.deadline);
+    const today = new Date();
+    if (deadlineDate <= today) {
+      return res.status(400).json({
+        message: 'Bad request - Deadline date must be in the future',
+      });
+    }
+    console.log('Checks Passed');
     // Perform the update
     await Assignment.update(
       {
@@ -422,7 +435,7 @@ const putAssignmentInfo = async (req, res) => {
       }
     );
 
-    const data = await Assignment.findByPk(id);
+    /* const data = await Assignment.findByPk(id);
     let result = {
       id: data.dataValues.id,
       name: data.dataValues.name,
@@ -432,11 +445,12 @@ const putAssignmentInfo = async (req, res) => {
       deadline: data.deadline.toISOString(),
       assignment_created: data.assignment_created,
       assignment_updated: data.assignment_updated,
-    };
-    console.log('Assignment Successfully Updated');
-    return res
+    };*/
+    return res.status(204).end();
+    //console.log('Assignment Successfully Updated');
+    /* return res
       .status(200)
-      .json({ message: 'Assignment successfully updated', assignment: result });
+      .json({ message: 'Assignment successfully updated', assignment: result });*/
   } catch (err) {
     //helper.logger.error("DB Error - ", err);
     res.status(400).send('Bad Request');
@@ -483,11 +497,12 @@ const deleteAssignmentInfo = async (req, res) => {
     const deletedAssignment = { ...existingAssignment.toJSON() };
     // Perform the delete
     await existingAssignment.destroy();
+    return res.status(204).end();
     //console.log('Assignment Successfully deleted');
-    return res.status(200).json({
+    /*return res.status(204).json({
       message: 'Assignment successfully deleted',
       assignment: deletedAssignment,
-    });
+    });*/
   } catch (err) {
     //helper.logger.error("DB Error - ", err);
     res.status(400).send('Bad Request');
