@@ -1,7 +1,5 @@
-////RECENT CHANGE Oct1 START
-//const assignmentModel = require('../Models/assignment-model');//EARLIER
 const { Account, Assignment } = require('../Models/association');
-////RECENT CHANGE Oct1 END
+
 const {
   validUserId,
   getDecryptedCreds,
@@ -69,24 +67,7 @@ const createNewAssignment = async (req, res) => {
       message: 'Bad request - Query String not Allowed',
     });
   }
-  /*if (
-    !req.body.name ||
-    !req.body.points ||
-    !req.body.num_of_attemps ||
-    !req.body.deadline ||
-    req.body.points < 1 ||
-    req.body.points > 10 ||
-    !Number.isInteger(req.body.points) ||
-    typeof req.body.name !== 'string' ||
-    !Number.isInteger(req.body.num_of_attemps) ||
-    req.body.num_of_attemps < 1 ||
-    req.body.num_of_attemps < 3
-  ) {
-    console.log('Invalid input');
-    return res.status(400).json({
-      message: 'Bad request-Invalid Assignment body Parameters',
-    });
-  }*/
+
   try {
     //Validation 4 already exists for Specific User
     let { userName } = getDecryptedCreds(req.headers.authorization);
@@ -110,34 +91,7 @@ const createNewAssignment = async (req, res) => {
           'Bad request-This Assignment details already exists for Specific User.',
       });
     }
-    ////RECENT CHANGE Oct1 START change 1 model NAME and commented
-    /*
-    let assignmentObj = await Assignment.findOne({
-      where: {
-        name: req.body.name,
-        points: req.body.points,
-        num_of_attempts: req.body.num_of_attemps,
-        deadline: req.body.deadline,
-      },
-    });
-    if (assignmentObj) {
-      //helper.logger.error("Bad request!! The entered sku value already exists. - ", req.body.sku);
-      return res.status(400).json({
-        message: 'Bad request!! Assignment already exists.',
-      });
-    }*/
-    ////RECENT CHANGE Oct1 END change 1 model NAME and commented
 
-    ////RECENT CHANGE Oct1 START model NAME and Commented
-    /*
-    let data = await Assignment.create({
-      id: idValue,
-      name: req.body.name,
-      points: req.body.points,
-      num_of_attempts: req.body.num_of_attemps,
-      deadline: req.body.deadline,
-    });*/
-    ////RECENT CHANGE Oct1 START model NAME and Commented
     //Change string to Date
     const deadlineDate = new Date(req.body.deadline);
 
@@ -164,17 +118,7 @@ const createNewAssignment = async (req, res) => {
     };
     console.log('PASSED TILL HERE');
     let assignment = await data.createAssignment(newAssignment);
-    //NEW CODE ADDED END
-    ////RECENT CHANGE Oct1 START Commented
-    /*
-    let result = {
-      id: data.dataValues.id,
-      name: data.dataValues.name,
-      points: data.dataValues.points,
-      num_of_attempts: data.dataValues.num_of_attempts,
-      deadline: data.dataValues.deadline,
-    };*/
-    ////RECENT CHANGE Oct1 END Commented
+
     let result = {
       id: assignment.id,
       name: assignment.name,
@@ -190,16 +134,12 @@ const createNewAssignment = async (req, res) => {
       .json({ message: 'Assignment created successfully', assignment: result });
   } catch (err) {
     return res.status(400).json({ message: 'Bad Request' });
-    //console.log('Error in creating new Assignment' + ' ' + err.merssage);
   }
 };
 
 const getAssignment = async (req, res) => {
-  // helper.logger.info('GET - Product for id - ', req.params.id);
-  // helper.statsdClient.increment('GET_product');
-  console.log('Get Assignment with ID');
+  //console.log('Get Assignment with ID');
   if (req._body) {
-    // helper.logger.error('Bad request. Request body present.');
     return res.status(400).send('Bad Request-Request body present');
   }
 
@@ -226,17 +166,7 @@ const getAssignment = async (req, res) => {
       return res.status(400).json({
         message: 'Bad Request-Assignment not found',
       });
-    } /*else if (existingAssignment) {
-      let { userName } = getDecryptedCreds(req.headers.authorization);
-      //console.log('Email of User' + ' ' + userName);
-      let idValue = await validUserId(userName);
-      let ownerCheck = existingAssignment.accountId;
-      if (ownerCheck !== idValue) {
-        return res.status(403).json({
-          message: 'Forbidden-Assignment belongs to another User',
-        });
-      }
-    }*/
+    }
     let result = {
       id: existingAssignment.dataValues.id,
       name: existingAssignment.dataValues.name,
@@ -246,25 +176,19 @@ const getAssignment = async (req, res) => {
       assignment_created: existingAssignment.assignment_created,
       assignment_updated: existingAssignment.assignment_updated,
     };
-    //helper.logger.info('Product Successfully fetched');
+
     console.log('Assignment fetched successfully');
     return res
       .status(200)
       .json({ message: 'Assignment fetched successfully', assignment: result });
   } catch (err) {
-    // helper.logger.error('DB Error - ', err);
-    // res.status(400).send('Bad Request');
     return res.status(400).json({ message: 'Bad request ' });
-    //console.log('Error in accessing the Assignment' + ' ' + err.message);
   }
 };
 
 const getAllAssignments = async (req, res) => {
-  // helper.logger.info('GET - Product for id - ', req.params.id);
-  // helper.statsdClient.increment('GET_product');
   console.log('Get all Assignment ');
   if (req._body) {
-    // helper.logger.error('Bad request. Request body present.');
     return res.status(400).send('Bad Request-Request body present');
   }
 
@@ -378,13 +302,6 @@ const putAssignmentInfo = async (req, res) => {
       message: 'Bad request - Query String not Allowed',
     });
   }
-  /*
-  // Check if the request body is empty
-  if (Object.keys(req.body).length === 0) {
-    return res.status(400).json({
-      message: 'Bad request - Request body is empty',
-    });
-  }*/
 
   let id = req.params.id;
   const idCheck = isUUIDv4(id);
@@ -394,14 +311,6 @@ const putAssignmentInfo = async (req, res) => {
     });
   }
   try {
-    /*let prodObj = await db.product.findOne({where:{sku:req.body.sku}});
-      if(prodObj && prodObj.dataValues.id != id) {
-          helper.logger.error("Bad request!! The entered sku value already exists. - ", req.body.sku);
-          return res.status(400).json({
-              message: "Bad request!! The entered sku value already exists."
-          });
-      }*/
-
     // Check if the Assignment with the given ID exists
     const existingAssignment = await Assignment.findByPk(id);
     if (!existingAssignment) {
@@ -443,24 +352,8 @@ const putAssignmentInfo = async (req, res) => {
       }
     );
 
-    /* const data = await Assignment.findByPk(id);
-    let result = {
-      id: data.dataValues.id,
-      name: data.dataValues.name,
-      points: data.dataValues.points,
-      num_of_attempts: data.dataValues.num_of_attempts,
-      deadline: data.dataValues.deadline,
-      deadline: data.deadline.toISOString(),
-      assignment_created: data.assignment_created,
-      assignment_updated: data.assignment_updated,
-    };*/
     return res.status(204).end();
-    //console.log('Assignment Successfully Updated');
-    /* return res
-      .status(200)
-      .json({ message: 'Assignment successfully updated', assignment: result });*/
   } catch (err) {
-    //helper.logger.error("DB Error - ", err);
     res.status(400).send('Bad Request');
   }
 };
@@ -506,11 +399,6 @@ const deleteAssignmentInfo = async (req, res) => {
     // Perform the delete
     await existingAssignment.destroy();
     return res.status(204).end();
-    //console.log('Assignment Successfully deleted');
-    /*return res.status(204).json({
-      message: 'Assignment successfully deleted',
-      assignment: deletedAssignment,
-    });*/
   } catch (err) {
     //helper.logger.error("DB Error - ", err);
     res.status(400).send('Bad Request');

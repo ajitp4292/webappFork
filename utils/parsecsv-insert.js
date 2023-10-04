@@ -9,10 +9,9 @@ const userModel = sequelize.models.Account;
 async function parseAndInsertCSV() {
   try {
     const appIntializeResult = await intializeApp();
-    //console.log('appInit ' + appIntializeResult);
 
     const csvFilePath = '/opt/users.csv';
-    // Validation 1: Check if the file exists
+
     if (!fs.existsSync(csvFilePath)) {
       console.log('File not found');
       return false;
@@ -57,7 +56,7 @@ async function parseAndInsertCSV() {
         //Insert only if no record in Account
         if (countRows === 0) {
           let hashedPassword = await createPassHash(row.password);
-          ////RECENT CHANGE Oct1
+
           await userModel.create({
             first_name: row.first_name,
             last_name: row.last_name,
