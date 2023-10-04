@@ -1,3 +1,5 @@
+//Useful Functions
+
 const bcrypt = require('bcrypt');
 
 const { Account } = require('../Models/association');
@@ -8,7 +10,7 @@ const createPassHash = async (pass) => {
   const hashedpassword = await bcrypt.hash(pass, salt);
   return hashedpassword;
 };
-
+//PARSE THE AUTH HEADER
 const getDecryptedCreds = (authHeader) => {
   const base64Creds = authHeader.split(' ')[1];
   const credentials = Buffer.from(base64Creds, 'base64').toString('ascii');
@@ -18,7 +20,7 @@ const getDecryptedCreds = (authHeader) => {
 
   return { userName, pass };
 };
-
+//AUTH VALIDATION MIDDLEWARE
 const aAuthCheck = async (req, res, next) => {
   //console.log('Inside MiddleWare aAuthCheck');
   const authHeader = req.headers.authorization;
@@ -56,6 +58,7 @@ const aAuthCheck = async (req, res, next) => {
   next();
 };
 
+//check User Authentication
 const validUser = async (userName, pass) => {
   let result = await Account.findOne({
     where: { email: userName },
@@ -74,8 +77,8 @@ const validUser = async (userName, pass) => {
   return true;
 };
 
+//userId retrieve Function
 const validUserId = async (userName) => {
-  //RECENT CHNAGE OCT 2
   let result = await Account.findOne({
     where: { email: userName },
     attributes: ['id'],
@@ -83,14 +86,14 @@ const validUserId = async (userName) => {
 
   return result.id;
 };
-
+//User Exists
 const userIdExits = async (emailIdvalue) => {
   const countRows = await Account.count({
     where: { email: emailIdvalue },
   });
   return countRows;
 };
-
+//Handle invalid Paths
 const invalidPath = (req, res) => {
   const queryString = req.originalUrl.split('?')[1]; // Get the query string
 
@@ -108,13 +111,14 @@ const invalidPath = (req, res) => {
 
 const methodNotAllowed = (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  //console.log('Inside all for /healthz');
+
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.removeHeader('Connection');
   res.removeHeader('Keep-Alive');
   res.status(405).end();
 };
+//Check UUIDV4
 const isUUIDv4 = (input) => {
   const uuidv4Pattern =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
@@ -124,7 +128,7 @@ const isUUIDv4 = (input) => {
 const isValidISODATE = (dateString) => {
   return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(dateString);
 };
-
+//Check query Params
 const checkQueryParams = (req, res, next) => {
   const queryString = req.originalUrl.split('?')[1]; // Get the query string
 
