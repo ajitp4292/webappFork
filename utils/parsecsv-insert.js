@@ -4,17 +4,13 @@ const { createPassHash, userIdExits } = require('../utils/helper');
 const { sequelize } = require('../Database/postgres');
 const intializeApp = require('../utils/bootstrap');
 
-//const { userModel } = require('../Models/user-model');
-
 const userModel = sequelize.models.Account;
 
 async function parseAndInsertCSV() {
   try {
     const appIntializeResult = await intializeApp();
-    console.log('appInit ' + appIntializeResult);
-    //Earlier code accountModule return
-    //userModel(sequelize);
-    // assignmentModel(sequelize);
+    //console.log('appInit ' + appIntializeResult);
+
     const csvFilePath = '/opt/users.csv';
     // Validation 1: Check if the file exists
     if (!fs.existsSync(csvFilePath)) {

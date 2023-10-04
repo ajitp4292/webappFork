@@ -1,9 +1,6 @@
 const bcrypt = require('bcrypt');
-////RECENT CHANGE Oct1 START
-//const userModel = require('../Models/user-model');//EARLIER
-const { Account } = require('../Models/association');
 
-/////RECENT CHANGE Oct1 END
+const { Account } = require('../Models/association');
 
 //Hashing Logic for Users password
 const createPassHash = async (pass) => {
@@ -22,67 +19,17 @@ const getDecryptedCreds = (authHeader) => {
   return { userName, pass };
 };
 
-//To be Implemented
-/*
-const uAuthCheck = async (req, res, next) => {
-  //Check if auth header is present and is a basic auth header.
-  if (
-    !req.headers.authorization ||
-    req.headers.authorization.indexOf('Basic ') === -1
-  ) {
-    logger.error('Authorization header missing - Unauthorized');
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  //decode the auth header
-  let { userName, pass } = getDecryptedCreds(req.headers.authorization);
-  const id = req?.params?.id;
-
-  //Check if user is valid
-  let userAccCheck = await validUser(userName, pass);
-
-  if (!userName || !pass || !userAccCheck) {
-    logger.error('Incorrect user details - Unauthorized');
-    return res.status(401).json({
-      message: 'Unauthorized',
-    });
-  }
-
-  //Check if user creds match the user at id.
-  let dbCheck = await dbCredVal(userName, pass, id);
-  if (dbCheck) {
-    logger.error(`Incorrect user details - ${dbCheck}`);
-    return res.status(dbCheck == 'Forbidden' ? 403 : 404).json({
-      message: dbCheck,
-    });
-  }
-
-  next();
-};
-*/
-
 const aAuthCheck = async (req, res, next) => {
-  //Check if auth header is present and is a basic auth header.
-
-  console.log('Inside MiddleWare aAuthCheck');
+  //console.log('Inside MiddleWare aAuthCheck');
   const authHeader = req.headers.authorization;
-  ///MAIN CODE START
-  console.log('Authorization Header' + ' ' + authHeader);
+
+  //console.log('Authorization Header' + ' ' + authHeader);
   //console.log('Auth' + req.headers.authorization.indexOf('Basic'));
   if (!authHeader || !authHeader.startsWith('Basic ')) {
     return res.status(401).json({
       message: 'Bad Request: Missing or invalid Authorization header',
     });
   }
-  /*if (
-    !req.headers.authorization ||
-    req.headers.authorization.indexOf('Basic ') !== 0
-  ) {
-    //logger.error("Authorization header missing - Unauthorized");
-    console.log('Authorization header missing - Unauthorized');
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-*/
 
   //decode the auth header
   let { userName, pass } = getDecryptedCreds(req.headers.authorization);
@@ -106,19 +53,6 @@ const aAuthCheck = async (req, res, next) => {
     });
   }
 
-  ///MAIN CODE END
-
-  /*if (id) {
-    //Check if user creds match the product at id.
-    let dbCheck = await dbProdVal(userName, pass, id);
-    if (dbCheck) {
-      logger.error(`Incorrect user details - ${dbCheck}`);
-      return res.status(dbCheck == 'Forbidden' ? 403 : 404).json({
-        message: dbCheck,
-      });
-    }
-  }*/
-  //Removing temporary
   next();
 };
 

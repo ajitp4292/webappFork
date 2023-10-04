@@ -12,31 +12,12 @@ const app = express();
 
 const { sequelize } = require('./Database/postgres');
 
-// Use the databaseBootstrapMiddleware as the first middleware to run when the app starts
-// Parse JSON request bodies
 app.use(bodyParser.json());
-//app.use(express.json());
-const listen_Port = process.env.PORT;
-//avoid etag in response
-app.set('etag', false);
-/*
-// Call the bootStrap function to bootstrap the database
 
-bootStrap()
-  .then((result) => {
-    if (result) {
-      console.log('Database bootstrapped');
-      // Start the Express app after the database is bootstrapped
-      app.listen(listen_Port, () =>
-        console.log(`Listening to port ${listen_Port}`)
-      );
-    } else {
-      console.error('Database bootstrap failed');
-    }
-  })
-  .catch((error) => {
-    console.error('Error during database bootstrap:', error);
-  });*/
+const listen_Port = process.env.PORT;
+
+app.set('etag', false);
+
 module.exports = app;
 //BootStrap and LOAD CSV
 const res = parseAndInsertCSV();
@@ -77,55 +58,6 @@ app.get('/*', (req, res) => {
   return res.status(404).json({
     message: 'Resource Not Found',
   });
-});*/
-
-//Main API GET EndPoint
-/*
-app.get('/healthz', async (req, res) => {
-  console.log('INside');
-  const queryParams = Object.keys(req.query);
-  const queryBody = Object.keys(req.body);
-
-  const dbConnection = await connection();
-  //Remove and Set response headers
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.removeHeader('Connection');
-  res.removeHeader('Keep-Alive');
-
-  if (queryParams.length > 0 || queryBody.length > 0) {
-    res.status(400).end();
-  } else if (dbConnection) {
-    res.status(200).end();
-  } else if (!dbConnection) {
-    res.status(503).end();
-  }
-});
-*/
-
-//Api Endpoint to handle unsupported methods
-/*
-REMOVE TEMP
-app.all('/healthz', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  //console.log('Inside all for /healthz');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.removeHeader('Connection');
-  res.removeHeader('Keep-Alive');
-  res.status(405).end();
-});*/
-
-//Handling Invalid EndPoint
-/*
-app.all('/*', (req, res) => {
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.removeHeader('Connection');
-  res.removeHeader('Keep-Alive');
-  res.status(404).end();
 });*/
 
 app.listen(listen_Port, () => {
