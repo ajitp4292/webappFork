@@ -22,7 +22,7 @@ The entire Application has 6 API EndPoints.
 
 1.Visual studio code (IDE)
 2.POSTMAN
-3.Database - MySQL
+3.Database - Postgres
 4.Node.js
 
 ## Responds with following HTTP messages
