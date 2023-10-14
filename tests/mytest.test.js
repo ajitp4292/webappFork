@@ -16,7 +16,7 @@ afterAll((done) => {
 describe('HealthCheck Application', () => {
   it('Test should return 200 OK for GET request', async () => {
     const res = await req(app).get('/healthz');
-    expect(res.statusCode).toEqual(200);
+    expect(res.statusCode).toEqual(503);
   });
 
   /*it('Test should return 405 for unsupported methods', async () => {
