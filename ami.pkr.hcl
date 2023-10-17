@@ -76,6 +76,15 @@ build {
   name    = "packer-ami"
   sources = ["source.amazon-ebs.app-ami"]
 
+  provisioner "shell" {
+    environment_vars = [
+      "CHECKPOINT_DISABLE=1",
+      "DEBIAN_FRONTEND=noninteractive"
+    ]
+    inline = [
+      "sudo chown admin:admin /opt"
+    ]
+  }
 
   provisioner "file" {
     source      = "webapp.zip"
