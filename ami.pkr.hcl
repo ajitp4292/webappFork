@@ -20,7 +20,7 @@ variable "source_ami" {
 
 variable "ssh_username" {
   type    = string
-  default = "admin_user"
+  default = "admin"
 }
 
 variable "vpc_id" {
@@ -76,12 +76,12 @@ build {
   name    = "packer-ami"
   sources = ["source.amazon-ebs.app-ami"]
 
-  
+  /*
   provisioner "file" {
-    source      = "../webapp.zip"
+    source      = "webapp.zip"
     destination = "/opt/webapp.zip"
   }
-
+*/
 
   provisioner "shell" {
     environment_vars = [
@@ -89,7 +89,7 @@ build {
       "CHECKPOINT_DISABLE=1"
     ]
 
-    script = "./packer/start.sh"
+    script = "./scripts/start.sh"
   }
   /*
   post-processor "manifest" {

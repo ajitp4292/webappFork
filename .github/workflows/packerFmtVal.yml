@@ -14,30 +14,30 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Create zip archive
-        run: zip -r webapp.zip .
+      - name: zip the project & copy to repo
+        run: cd ../ && zip -r webapp.zip webapp && cd - && cp ../webapp.zip .
+      - name: Check zip
+        run: ls -l
 
       - name: Install Packer
-        run: sudo apt-get update && sudo apt-get install -y packer && cd packer && pwd
+        run: sudo apt-get update && sudo apt-get install -y packer
       - name: Packer Init
-        run: packer init packer
+        run: packer init ami.pkr.hcl
 
       - name: Packer Format
         run: |
-          # Use the find command to locate all .pkr.hcl files in the "packer" folder
-          # and apply "packer fmt" to each of them
-          find packer -name "*.pkr.hcl" -exec packer fmt -check -diff {} \;
-          if [ $? -ne 0 ]; then
+          if packer fmt -check -diff ami.pkr.hcl; then
+            echo "Packer format check passed."
+          else
             echo "Packer format check failed. Run 'packer fmt' to fix."
             exit 1
           fi
 
       - name: Validate Packer Template
         run: |
-          # Use the find command to locate all .pkr.hcl files in the "packer" folder
-          # and validate each of them using "packer validate"
-          find packer -name "*.pkr.hcl" -exec packer validate {} \;
-          if [ $? -ne 0 ]; then
+          if packer validate ami.pkr.hcl; then
+            echo "Packer validation check passed."
+          else
             echo "Packer validation check failed."
             exit 1
           fi
