@@ -76,12 +76,12 @@ build {
   name    = "packer-ami"
   sources = ["source.amazon-ebs.app-ami"]
 
-  /*
+
   provisioner "file" {
     source      = "webapp.zip"
     destination = "/opt/webapp.zip"
   }
-*/
+
 
   provisioner "shell" {
     environment_vars = [
@@ -91,9 +91,9 @@ build {
 
     script = "./scripts/start.sh"
   }
-  
+
   post-processor "manifest" {
-    output = "./packer/manifest.json"
+    output     = "manifest.json"
     strip_path = true
   }
 }
