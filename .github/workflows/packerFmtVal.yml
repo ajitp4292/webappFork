@@ -24,7 +24,9 @@ jobs:
 
       - name: Packer Format
         run: |
-          packer fmt -check -diff .
+          # Use the find command to locate all .pkr.hcl files in the "packer" folder
+          # and apply "packer fmt" to each of them
+          find packer -name "*.pkr.hcl" -exec packer fmt -check -diff {} \;
           if [ $? -ne 0 ]; then
             echo "Packer format check failed. Run 'packer fmt' to fix."
             exit 1
@@ -32,7 +34,9 @@ jobs:
 
       - name: Validate Packer Template
         run: |
-          packer validate ami.pkr.hcl
+          # Use the find command to locate all .pkr.hcl files in the "packer" folder
+          # and validate each of them using "packer validate"
+          find packer -name "*.pkr.hcl" -exec packer validate {} \;
           if [ $? -ne 0 ]; then
             echo "Packer validation check failed."
             exit 1
