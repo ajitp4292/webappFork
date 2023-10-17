@@ -91,9 +91,9 @@ build {
 
     script = "./scripts/start.sh"
   }
-  /*
+  
   post-processor "manifest" {
     output = "./packer/manifest.json"
     strip_path = true
-  }*/
+  }
 }
