@@ -61,8 +61,8 @@ source "amazon-ebs" "app-ami" {
   source_ami    = "${var.source_ami}"
   ssh_username  = "${var.ssh_username}"
   subnet_id     = "${var.subnet_id}"
-  //    vpc_id = "${var.vpc_id}"
-  //profile       = "dev"  
+  vpc_id        = "${var.vpc_id}"
+  profile       = "dev"
 
   launch_block_device_mappings {
     delete_on_termination = true
@@ -73,11 +73,12 @@ source "amazon-ebs" "app-ami" {
 }
 
 build {
-  name    = "packer-test"
+  name    = "packer-ami"
   sources = ["source.amazon-ebs.app-ami"]
 
+  
   provisioner "file" {
-    source      = "./webapp.zip"
+    source      = "../webapp.zip"
     destination = "/opt/webapp.zip"
   }
 
@@ -88,7 +89,7 @@ build {
       "CHECKPOINT_DISABLE=1"
     ]
 
-    script = "../packer/start.sh"
+    script = "./packer/start.sh"
   }
   /*
   post-processor "manifest" {
