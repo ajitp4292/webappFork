@@ -40,7 +40,7 @@ variable "instance_type" {
 
 variable "ami_users" {
   type    = list(string)
-  default = ["838458155220"]
+  default = ["838458155220", "130332994094"]
 }
 
 source "amazon-ebs" "app-ami" {
