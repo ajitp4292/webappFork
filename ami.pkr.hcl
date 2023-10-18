@@ -88,7 +88,7 @@ build {
 
   provisioner "file" {
     source      = "webapp.zip"
-    destination = "/opt/webapp.zip"
+    destination = "/opt/"
   }
 
 
@@ -98,7 +98,9 @@ build {
       "CHECKPOINT_DISABLE=1"
     ]
 
-    script = "./scripts/start.sh"
+    scripts = [
+      "script.sh"
+    ]
   }
 
   post-processor "manifest" {
