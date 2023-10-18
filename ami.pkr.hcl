@@ -82,7 +82,7 @@ build {
       "DEBIAN_FRONTEND=noninteractive"
     ]
     inline = [
-      "sudo chown admin:admin /opt"
+      "sudo chown -R admin:admin /opt"
     ]
   }
 

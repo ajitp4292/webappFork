@@ -51,6 +51,19 @@ jobs:
       - run: npm install
       - run: npm test
 
+  create_env:
+    if: ${{ github.event.pull_request.merged == true }}
+    name: create .env
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "DB_DIALECT=$DB_DIALECT" >> .env
+          echo "DB_HOST=$DB_HOST" >> .env
+          echo "DB_NAME=$DB_NAME" >> .env
+          echo "DB_PASSWORD=$DB_PASSWORD" >> .env
+          echo "DB_USER=$DB_USER" >> .env
+          echo "PORT=$PORT" >> .env
+
   build_packer_ami:
     if: ${{ github.event.pull_request.merged == true }}
     name: build_packer_ami
@@ -63,6 +76,9 @@ jobs:
 
       - name: zip the project
         run: cd ../ && zip -r webapp.zip webapp && cd - && cp ../webapp.zip .
+
+      - name: Clean up (remove the .env file)
+        run: rm .env
 
       - name: Check zip
         run: ls -l
