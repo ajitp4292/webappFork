@@ -75,11 +75,13 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Setup 'packer'
-        uses: hashicorp/setup-packer@v1
+        uses: hashicorp/setup-packer@main
+        id: setup
         with:
           version: '1.8.3' # or 'latest'
 
       - name: Run 'packer init'
+        id: init
         run: packer init ami.pkr.hcl
 
       - name: Run 'packer Build'
@@ -88,4 +90,5 @@ jobs:
           echo "Running packer build"
           packer build ami.pkr.hcl
           AMI_ID=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2)
-          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+          # AMI_ID="sample_ami_id"
+          echo "AMI_ID=$AMI_ID" >> $GITHUB_OUTPUT
