@@ -75,10 +75,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: zip the project
-        run: cd ../ && zip -r webapp.zip webapp .env && cd - && cp ../webapp.zip .
-
-      - name: Clean up (remove the .env file)
-        run: rm .env
+        run: cd ../ && zip -r webapp.zip webapp .env * && cd - && cp ../webapp.zip .
 
       - name: Check zip
         run: ls -l
