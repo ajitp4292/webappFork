@@ -54,7 +54,7 @@ source "amazon-ebs" "app-ami" {
 
 
   aws_polling {
-    delay_seconds = 120
+    delay_seconds = 30
     max_attempts  = 50
   }
   instance_type = "${var.instance_type}"
