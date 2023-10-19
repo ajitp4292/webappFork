@@ -7,7 +7,6 @@ echo_info () {
 # Updating packages
 echo_info "UPDATES-BEING-INSTALLED"
 sudo apt update && sudo apt upgrade -y
-sudo apt-get remove --purge -y git
 
 source ~/.bashrc
 
@@ -28,6 +27,10 @@ sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'Admin7914';"
 # Installing unzip
 echo_info "INSTALLING-UNZIP"
 sudo apt install -y unzip
+
+# Uninstalling git
+sudo apt-get remove --purge -y git
+
 
 cd /opt
 unzip webapp.zip
