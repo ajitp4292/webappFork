@@ -73,38 +73,20 @@ source "amazon-ebs" "app-ami" {
 }
 
 build {
-  name    = "packer-ami"
-  sources = ["source.amazon-ebs.app-ami"]
+  sources = ["source.amazon-ebs.webapp"]
+
+  provisioner "file" {
+    source      = "webapp.zip"
+    destination = "/home/admin/webapp.zip"
+  }
 
   provisioner "shell" {
     environment_vars = [
       "CHECKPOINT_DISABLE=1",
       "DEBIAN_FRONTEND=noninteractive"
     ]
-    inline = [
-      "sudo chown -R admin:admin /opt"
-    ]
-  }
-
-  provisioner "file" {
-    source      = "webapp.zip"
-    destination = "/opt/"
-  }
-
-
-  provisioner "shell" {
-    environment_vars = [
-      "DEBIAN_FRONTEND=noninteractive",
-      "CHECKPOINT_DISABLE=1"
-    ]
-
     scripts = [
       "script.sh"
     ]
-  }
-
-  post-processor "manifest" {
-    output     = "manifest.json"
-    strip_path = true
   }
 }
