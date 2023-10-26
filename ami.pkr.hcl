@@ -73,7 +73,9 @@ source "amazon-ebs" "app-ami" {
 }
 
 build {
-  sources = ["source.amazon-ebs.webapp"]
+  name    = "packer-ami"
+  sources = ["source.amazon-ebs.app-ami"]
+
 
   provisioner "file" {
     source      = "webapp.zip"
