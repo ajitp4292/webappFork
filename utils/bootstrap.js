@@ -34,9 +34,9 @@ async function intializeApp() {
 
     if (result) {
       helper.logger.info(
-        'DB connection success and table schemas created in DB, application Intialized at Port-',
-        listen_Port
+        `DB connection success and table schemas created in DB, application initialized at Port-${listen_Port}`
       );
+
       return true;
     } else {
       helper.logger.error(
