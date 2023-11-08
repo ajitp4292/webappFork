@@ -1,8 +1,20 @@
 //Useful Functions
 
 const bcrypt = require('bcrypt');
+const winston = require('winston');
+const StatsD = require('node-statsd');
+const statsdClient = new StatsD('localhost', 8125);
 
 const { Account } = require('../Models/association');
+
+const logger = winston.createLogger({
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({
+      filename: '/var/log/csye6225.log',
+    }),
+  ],
+});
 
 //Hashing Logic for Users password
 const createPassHash = async (pass) => {
@@ -28,6 +40,7 @@ const aAuthCheck = async (req, res, next) => {
   //console.log('Authorization Header' + ' ' + authHeader);
   //console.log('Auth' + req.headers.authorization.indexOf('Basic'));
   if (!authHeader || !authHeader.startsWith('Basic ')) {
+    logger.error('Missing or invalid Authorization header');
     return res.status(401).json({
       message: 'Bad Request: Missing or invalid Authorization header',
     });
@@ -35,12 +48,13 @@ const aAuthCheck = async (req, res, next) => {
 
   //decode the auth header
   let { userName, pass } = getDecryptedCreds(req.headers.authorization);
-  console.log('Expected email as UserName' + userName);
-  console.log('Password' + pass);
+  //console.log('Expected email as UserName' + userName);
+  //console.log('Password' + pass);
   if (!userName || !pass) {
+    logger.error('Missing username or password- Unauthorized');
     return res
       .status(401)
-      .json({ message: 'Bad Request: Missing username or password' });
+      .json({ message: 'Unauthorized-Missing username or password' });
   }
 
   //const id = req?.params?.id;
@@ -49,7 +63,7 @@ const aAuthCheck = async (req, res, next) => {
   let userAccCheck = await validUser(userName, pass);
 
   if (!userAccCheck) {
-    //logger.error('Incorrect user details - Unauthorized');
+    logger.error('Incorrect user details - Unauthorized');
     return res.status(401).json({
       message: 'Unauthorized User',
     });
@@ -69,7 +83,7 @@ const validUser = async (userName, pass) => {
   }
 
   let passCheck = await bcrypt.compare(pass, result.dataValues.password);
-  console.log(passCheck);
+  //console.log(passCheck);
   if (!passCheck) {
     return false;
   }
@@ -99,10 +113,14 @@ const invalidPath = (req, res) => {
 
   // Check if there are any query parameters after /assignments
   if (queryString) {
+    logger.error(
+      'Bad request - Query parameters not allowed after /assignments'
+    );
     return res.status(400).json({
       message: 'Bad request - Query parameters not allowed after /assignments',
     });
   } else {
+    logger.error('Resource Not Found ');
     return res.status(404).json({
       message: 'Resource Not Found ',
     });
@@ -134,6 +152,9 @@ const checkQueryParams = (req, res, next) => {
 
   // Check if there are any query parameters after /assignments
   if (queryString) {
+    logger.error(
+      'Bad request - Query parameters not allowed after /assignments'
+    );
     return res.status(400).json({
       message: 'Bad request - Query parameters not allowed after /assignments',
     });
@@ -154,4 +175,6 @@ module.exports = {
   methodNotAllowed,
   isValidISODATE,
   checkQueryParams,
+  logger,
+  statsdClient,
 };

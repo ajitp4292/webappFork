@@ -1,4 +1,5 @@
 const { Account, Assignment } = require('../Models/association');
+const helper = require('../utils/helper');
 
 const {
   validUserId,
@@ -8,6 +9,9 @@ const {
 } = require('../utils/helper');
 
 const createNewAssignment = async (req, res) => {
+  helper.logger.info('POST - Assignment'); //LOG DATA
+  helper.statsdClient.increment('POST_assignment'); //METRIC DATA
+
   // Validation 3: Check data types and value ranges
   if (
     typeof req.body.name !== 'string' ||
@@ -20,6 +24,10 @@ const createNewAssignment = async (req, res) => {
     !isValidISODATE(req.body.deadline)
   ) {
     //console.log('Invalid input');
+    helper.logger.error(
+      'Bad request-Invalid Assignment Parameters or Empty body-Validation Check(s) failed. - ',
+      req.body
+    );
     return res.status(400).json({
       message: 'Bad request-Invalid Assignment Parameters or Empty body',
     });
@@ -27,7 +35,11 @@ const createNewAssignment = async (req, res) => {
 
   //Validation1 for JSON
   if (typeof req.body !== 'object') {
-    console.log('Invalid input: Request body is not a JSON object');
+    helper.logger.error(
+      'Bad request: Request body must be a JSON object- Validation Check(s) failed. - ',
+      req.body
+    );
+    //console.log('Invalid input: Request body is not a JSON object');
     return res.status(400).json({
       message: 'Bad request: Request body must be a JSON object',
     });
@@ -40,7 +52,11 @@ const createNewAssignment = async (req, res) => {
     !req.body.num_of_attemps ||
     !req.body.deadline
   ) {
-    console.log('Invalid input');
+    //console.log('Invalid input');
+    helper.logger.error(
+      'Bad request-Required Assignment body Parameters are missing- Validation Check(s) failed. - ',
+      req.body
+    );
     return res.status(400).json({
       message: 'Bad request-Required Assignment body Parameters are missing',
     });
@@ -55,6 +71,10 @@ const createNewAssignment = async (req, res) => {
   );
 
   if (unwantedFields.length > 0) {
+    helper.logger.error(
+      'Bad request - Unwanted fields in request body-Validation Check(s) failed. - ',
+      req.body
+    );
     return res.status(400).json({
       message: 'Bad request - Unwanted fields in request body',
       unwantedFields: unwantedFields,
@@ -63,6 +83,10 @@ const createNewAssignment = async (req, res) => {
   //Validation for Query String
   const queryParams = Object.keys(req.query);
   if (queryParams.length > 0) {
+    helper.logger.error(
+      'Bad request - Query String not Allowed-Validation Check(s) failed. - ',
+      req.body
+    );
     return res.status(400).json({
       message: 'Bad request - Query String not Allowed',
     });
@@ -71,9 +95,9 @@ const createNewAssignment = async (req, res) => {
   try {
     //Validation 4 already exists for Specific User
     let { userName } = getDecryptedCreds(req.headers.authorization);
-    console.log('Email of User' + ' ' + userName);
+    //console.log('Email of User' + ' ' + userName);
     let idValue = await validUserId(userName);
-    console.log('User id' + ' ' + idValue);
+    //console.log('User id' + ' ' + idValue);
 
     let assignmentObj = await Assignment.findOne({
       where: {
@@ -86,6 +110,10 @@ const createNewAssignment = async (req, res) => {
     });
 
     if (assignmentObj) {
+      helper.logger.error(
+        'Bad request-This Assignment details already exists for Specific User-Validation Check(s) failed. - ',
+        req.body
+      );
       return res.status(400).json({
         message:
           'Bad request-This Assignment details already exists for Specific User.',
@@ -97,15 +125,22 @@ const createNewAssignment = async (req, res) => {
 
     const today = new Date();
     if (deadlineDate <= today) {
+      helper.logger.error(
+        'Bad request - Deadline date must be in the future- Validation Check(s) failed. - ',
+        req.body
+      );
       return res.status(400).json({
         message: 'Bad request - Deadline date must be in the future',
       });
     }
 
-    //NEW CODE ADDED NOW
     let data = await Account.findByPk(idValue);
-    console.log('Account Object' + data);
+    //console.log('Account Object' + data);
     if (!data) {
+      helper.logger.error(
+        'User not found-Validation Check(s) failed. - ',
+        req.body
+      );
       return res.status(404).json({
         message: 'User not found',
       });
@@ -116,7 +151,7 @@ const createNewAssignment = async (req, res) => {
       num_of_attempts: req.body.num_of_attemps,
       deadline: deadlineDate,
     };
-    console.log('PASSED TILL HERE');
+    helper.logger.info('Validation Checks Passed.');
     let assignment = await data.createAssignment(newAssignment);
 
     let result = {
@@ -128,24 +163,37 @@ const createNewAssignment = async (req, res) => {
       assignment_created: assignment.assignment_created,
       assignment_updated: assignment.assignment_updated,
     };
-
+    helper.logger.info('Assignment created successfully - ', result);
     return res
       .status(201)
       .json({ message: 'Assignment created successfully', assignment: result });
   } catch (err) {
+    helper.logger.error('Assignment create DB Error - ', err);
     return res.status(400).json({ message: 'Bad Request' });
   }
 };
 
 const getAssignment = async (req, res) => {
   //console.log('Get Assignment with ID');
+  helper.logger.info('GET - Assignment');
+  helper.statsdClient.increment('GET_assignment');
+
   if (req._body) {
+    helper.logger.error(
+      'Bad Request-Request body present- Validation Check(s) failed.',
+      req.body
+    );
     return res.status(400).send('Bad Request-Request body present');
   }
 
   let id = req.params.id;
   const idCheck = isUUIDv4(id);
   if (!idCheck) {
+    helper.logger.error(
+      'Bad request- Assignment Id is Incorrect- Validation Check(s) failed -',
+      req.params.id
+    );
+
     return res.status(400).json({
       message: 'Bad request- Assignment Id is Incorrect',
     });
@@ -154,15 +202,26 @@ const getAssignment = async (req, res) => {
   //Validation for Query String
   const queryParams = Object.keys(req.query);
   if (queryParams.length > 0) {
+    helper.logger.error(
+      'Bad request - Query String not Allowed- Validation Check(s) failed.-',
+      queryParams
+    );
     return res.status(400).json({
       message: 'Bad request - Query String not Allowed',
     });
   }
 
   try {
-    console.log('Checks passed');
+    //console.log('Checks passed');
+    helper.logger.info('Validation Checks Passed');
+
     const existingAssignment = await Assignment.findByPk(id);
     if (!existingAssignment) {
+      helper.logger.error(
+        'Bad Request-Assignment not found-Validation Check(s) failed.',
+        req.params.id
+      );
+
       return res.status(200).json({});
     }
     let result = {
@@ -175,24 +234,42 @@ const getAssignment = async (req, res) => {
       assignment_updated: existingAssignment.assignment_updated,
     };
 
-    console.log('Assignment fetched successfully');
+    //console.log('Assignment fetched successfully');
+    helper.logger.info(
+      'Assignment fetched successfully.',
+      req.params.id,
+      'details-',
+      result
+    );
+
     return res
       .status(200)
       .json({ message: 'Assignment fetched successfully', assignment: result });
   } catch (err) {
+    helper.logger.error('GET Assignment DB Error - ', err);
     return res.status(400).json({ message: 'Bad request ' });
   }
 };
 
 const getAllAssignments = async (req, res) => {
-  console.log('Get all Assignment ');
+  //console.log('Get all Assignment ');
+  helper.logger.info('GET - Assignments');
+  helper.statsdClient.increment('GET_assignments');
+
   if (req._body) {
+    helper.logger.error(
+      'Bad Request-Request body present-Validation Check(s) failed.'
+    );
     return res.status(400).send('Bad Request-Request body present');
   }
 
   //Validation for Query String
   const queryParams = Object.keys(req.query);
   if (queryParams.length > 0) {
+    helper.logger.error(
+      'Bad request - Query String not Allowed-Check(s) failed.',
+      queryParams
+    );
     return res.status(400).json({
       message: 'Bad request - Query String not Allowed',
     });
@@ -201,6 +278,7 @@ const getAllAssignments = async (req, res) => {
 
   try {
     // helper.logger.info('Checks Passed.');
+    helper.logger.info('Validation Checks Passed.');
     let { userName } = getDecryptedCreds(req.headers.authorization);
     //console.log('Email of User' + ' ' + userName);
     let idValue = await validUserId(userName);
@@ -212,6 +290,9 @@ const getAllAssignments = async (req, res) => {
     let data = await Assignment.findAll();
     //console.log('length' + data.length);
     if (!data || data.length === 0) {
+      helper.logger.error(
+        'Bad Request-Assignments not found-Validation Check(s) failed.'
+      );
       return res.status(200).json({});
     }
     let results = data.map((item) => ({
@@ -224,7 +305,8 @@ const getAllAssignments = async (req, res) => {
       assignment_updated: item.dataValues.assignment_updated,
     }));
     //helper.logger.info('Product Successfully fetched');
-    console.log('Assignments fetched successfully');
+    //console.log('Assignments fetched successfully');
+    helper.logger.info('Assignments fetched successfully', results);
     return res.status(200).json({
       message: 'Assignments fetched successfully',
       assignments: results,
@@ -232,11 +314,15 @@ const getAllAssignments = async (req, res) => {
   } catch (err) {
     // helper.logger.error('DB Error - ', err);
     // res.status(400).send('Bad Request');
+    helper.logger.error('GET all Assignments DB Error - ', err);
     res.status(400).send('Bad Request');
   }
 };
 
 const putAssignmentInfo = async (req, res) => {
+  helper.logger.info('PUT- Assignment');
+  helper.statsdClient.increment('PUT_assignment');
+
   //Validation for Assignments
   // Validation 3: Check data types and value ranges
   if (
@@ -250,6 +336,13 @@ const putAssignmentInfo = async (req, res) => {
     !isValidISODATE(req.body.deadline)
   ) {
     //console.log('Invalid input');
+    helper.logger.error(
+      'Bad request-Invalid Assignment Parameters or Empty body- Validation Check(s) failed. - ',
+      req.body,
+      'Assignment Id-',
+      req.params.id
+    );
+
     return res.status(400).json({
       message: 'Bad request-Invalid Assignment Parameters or Empty body',
     });
@@ -257,7 +350,14 @@ const putAssignmentInfo = async (req, res) => {
 
   //Validation1 for JSON
   if (typeof req.body !== 'object') {
-    console.log('Invalid input: Request body is not a JSON object');
+    //console.log('Invalid input: Request body is not a JSON object');
+    helper.logger.error(
+      'Bad request: Request body must be a JSON object-Check(s) failed. - ',
+      req.body,
+      'Assignment Id-',
+      req.params.id
+    );
+
     return res.status(400).json({
       message: 'Bad request: Request body must be a JSON object',
     });
@@ -270,7 +370,13 @@ const putAssignmentInfo = async (req, res) => {
     !req.body.num_of_attemps ||
     !req.body.deadline
   ) {
-    console.log('Invalid input');
+    //console.log('Invalid input');
+    helper.logger.error(
+      'Bad request-Required Assignment body Parameters are missing-Validation Check(s) failed. - ',
+      req.body,
+      'Assignment Id-',
+      req.params.id
+    );
     return res.status(400).json({
       message: 'Bad request-Required Assignment body Parameters are missing',
     });
@@ -285,6 +391,13 @@ const putAssignmentInfo = async (req, res) => {
   );
 
   if (unwantedFields.length > 0) {
+    helper.logger.error(
+      'Bad request - Unwanted fields in request body-Validation Check(s) failed. - ',
+      req.body,
+      'Assignment Id-',
+      req.params.id
+    );
+
     return res.status(400).json({
       message: 'Bad request - Unwanted fields in request body',
       unwantedFields: unwantedFields,
@@ -294,6 +407,13 @@ const putAssignmentInfo = async (req, res) => {
   //Validation for Query String
   const queryParams = Object.keys(req.query);
   if (queryParams.length > 0) {
+    helper.logger.error(
+      'Bad request - Query String not Allowed-Validation Check(s) failed. - ',
+      req.body,
+      'Assignment Id-',
+      req.params.id
+    );
+
     return res.status(400).json({
       message: 'Bad request - Query String not Allowed',
     });
@@ -302,6 +422,10 @@ const putAssignmentInfo = async (req, res) => {
   let id = req.params.id;
   const idCheck = isUUIDv4(id);
   if (!idCheck) {
+    helper.logger.error(
+      'Bad request- Assignment Id is Incorrect-Validation Check(s) failed. - ',
+      req.params.id
+    );
     return res.status(400).json({
       message: 'Bad request- Assignment Id is Incorrect',
     });
@@ -310,6 +434,10 @@ const putAssignmentInfo = async (req, res) => {
     // Check if the Assignment with the given ID exists
     const existingAssignment = await Assignment.findByPk(id);
     if (!existingAssignment) {
+      helper.logger.error(
+        'Bad Request-Assignment not found-Validation Check(s) failed. - ',
+        req.params.id
+      );
       return res.status(400).json({
         message: 'Bad Request-Assignment not found',
       });
@@ -319,6 +447,10 @@ const putAssignmentInfo = async (req, res) => {
       let idValue = await validUserId(userName);
       let ownerCheck = existingAssignment.accountId;
       if (ownerCheck !== idValue) {
+        helper.logger.error(
+          'Forbidden-Assignment belongs to another User-Check(s) failed. - ',
+          req.params.id
+        );
         return res.status(403).json({
           message: 'Forbidden-Assignment belongs to another User',
         });
@@ -328,11 +460,19 @@ const putAssignmentInfo = async (req, res) => {
     const deadlineDate = new Date(req.body.deadline);
     const today = new Date();
     if (deadlineDate <= today) {
+      helper.logger.error(
+        'Bad request - Deadline date must be in the future-Check(s) failed. - ',
+        req.body.deadline,
+        'Assignment Id-',
+        req.params.id
+      );
+
       return res.status(400).json({
         message: 'Bad request - Deadline date must be in the future',
       });
     }
-    console.log('Checks Passed');
+    //console.log('Checks Passed');
+    helper.logger.info('Validation Checks Passed');
     // Perform the update
     await Assignment.update(
       {
@@ -347,18 +487,37 @@ const putAssignmentInfo = async (req, res) => {
         },
       }
     );
-
+    helper.logger.info('Assignment updated successfully', {
+      AssignmentId: req.params.id,
+      UpdatedData: {
+        name: req.body.name,
+        points: req.body.points,
+        num_of_attempts: req.body.num_of_attempts,
+        deadline: deadlineDate.toISOString(),
+      },
+    });
     return res.status(204).end();
   } catch (err) {
+    helper.logger.error('Assignment update DB Error - ', err);
     res.status(400).send('Bad Request');
   }
 };
 
 const deleteAssignmentInfo = async (req, res) => {
+  helper.logger.info('DELETE- Assignment');
+  helper.statsdClient.increment('DELETE_assignment');
+
   //Validation for delete Assignments
 
   // Check if the request body is empty
   if (Object.keys(req.body).length > 0) {
+    helper.logger.error(
+      'Bad request - Request body not required-Check(s) failed. - ',
+      req.body,
+      'Assignment Id-',
+      req.params.id
+    );
+
     return res.status(400).json({
       message: 'Bad request - Request body not required',
     });
@@ -367,6 +526,11 @@ const deleteAssignmentInfo = async (req, res) => {
   let id = req.params.id;
   const idCheck = isUUIDv4(id);
   if (!idCheck) {
+    helper.logger.error(
+      'Bad request- Assignment Id is Incorrect-Check(s) failed. - ',
+      req.params.id
+    );
+
     return res.status(400).json({
       message: 'Bad request- Assignment Id is Incorrect',
     });
@@ -375,6 +539,11 @@ const deleteAssignmentInfo = async (req, res) => {
     // Check if the Assignment with the given ID(UUID4 version) exists
     const existingAssignment = await Assignment.findByPk(id);
     if (!existingAssignment) {
+      helper.logger.error(
+        'Bad Request-Assignment not found-Check(s) failed. - ',
+        req.params.id
+      );
+
       return res.status(404).json({
         message: 'Bad Request-Assignment not found',
       });
@@ -384,19 +553,30 @@ const deleteAssignmentInfo = async (req, res) => {
       let idValue = await validUserId(userName);
       let ownerCheck = existingAssignment.accountId;
       if (ownerCheck !== idValue) {
+        helper.logger.error(
+          'Forbidden-Assignment belongs to another User-Check(s) failed. - ',
+          req.params.id
+        );
+
         return res.status(403).json({
           message: 'Forbidden-Assignment belongs to another User',
         });
       }
     }
-    console.log('Checks Passed');
+    //console.log('Checks Passed');
+    helper.logger.info('Validation Checks Passed');
     // Capture the assignment data before deleting
     const deletedAssignment = { ...existingAssignment.toJSON() };
     // Perform the delete
     await existingAssignment.destroy();
+    helper.logger.info(
+      'Assignment deleted successfully - Assignment ID -',
+      req.params.id
+    );
     return res.status(204).end();
   } catch (err) {
     //helper.logger.error("DB Error - ", err);
+    helper.logger.error('Assignment delete DB Error - ', err);
     res.status(400).send('Bad Request');
   }
 };
