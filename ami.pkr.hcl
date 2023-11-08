@@ -82,6 +82,16 @@ build {
     destination = "/home/admin/webapp.zip"
   }
 
+  provisioner "file" {
+    source      = "webapp.service"
+    destination = "/home/admin/webapp.service"
+  }
+
+  provisioner "file" {
+    source      = "cloudwatch-config.json"
+    destination = "/home/admin/cloudwatch-config.json"
+  }
+
   provisioner "shell" {
     environment_vars = [
       "CHECKPOINT_DISABLE=1",

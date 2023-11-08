@@ -3,6 +3,7 @@ const csv = require('csv-parser');
 const { createPassHash, userIdExits } = require('../utils/helper');
 const { sequelize } = require('../Database/postgres');
 const intializeApp = require('../utils/bootstrap');
+const helper = require('./helper');
 
 const userModel = sequelize.models.Account;
 
@@ -13,7 +14,9 @@ async function parseAndInsertCSV() {
     const csvFilePath = '/opt/users.csv';
 
     if (!fs.existsSync(csvFilePath)) {
-      console.log('File not found');
+      //console.log('File not found');
+      const errorMessage = `File not found at: ${csvFilePath}`;
+      helper.logger.error(errorMessage);
       return false;
     }
     if (appIntializeResult) {
@@ -33,16 +36,26 @@ async function parseAndInsertCSV() {
                 !row.email ||
                 !row.password
               ) {
-                console.log('Invalid row at row number: ' + results.length);
+                //console.log('Invalid row at row number: ' + results.length);
+                helper.logger.error(
+                  `Invalid row at row number: ${results.length}`
+                );
                 return;
               }
               results.push(row);
+              helper.logger.info(
+                `User inserted: ${JSON.stringify({
+                  first_name: row.first_name,
+                  last_name: row.last_name,
+                  email: row.email,
+                })}`
+              );
             })
             .on('end', () => {
               resolve(results);
             })
             .on('error', (error) => {
-              console.log('Error');
+              //console.log('Error');
               reject(error);
             });
         });
@@ -52,6 +65,8 @@ async function parseAndInsertCSV() {
 
       // Insert each row of CSV data into the Account table
       for (const row of data) {
+        const { fN, lN, userEmail, ...rest } = row;
+
         let countRows = await userIdExits(row.email);
         //Insert only if no record in Account
         if (countRows === 0) {
@@ -64,18 +79,28 @@ async function parseAndInsertCSV() {
             password: hashedPassword,
             // Map CSV columns to model attributes as needed
           });
+          helper.logger.info(
+            `User inserted: ${JSON.stringify({ fN, lN, userEmail })}`
+          );
         }
       }
-      console.log('CSV data has been parsed and inserted into the database.');
+      //console.log('CSV data has been parsed and inserted into the database.');
+      helper.logger.info(
+        'App Initialization success - User CSV data has been parsed and inserted into the database.'
+      );
       return true;
     } else {
-      console.log(
+      /*console.log(
+        'Database Server is down cannot parse csv and load data of users'
+      );*/
+      helper.logger.error(
         'Database Server is down cannot parse csv and load data of users'
       );
       return false;
     }
   } catch (error) {
-    console.log('Error in csv parsing and Load' + error.message);
+    //console.log('Error in csv parsing and Load' + error.message);
+    helper.logger.error('Error in csv parsing and Load' + error.message);
   }
 }
 
