@@ -31,6 +31,7 @@ app.use('/v1/assignments', assignment);
 //API ENDPOINTS FOR healthz
 app.use('/healthz', healthzCheck);
 app.patch('/*', (req, res) => {
+  helper.logger.info('Method Not Allowed');
   return res.status(405).json({
     message: 'Method Not Allowed',
   });

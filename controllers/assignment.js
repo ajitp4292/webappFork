@@ -235,13 +235,7 @@ const getAssignment = async (req, res) => {
     };
 
     //console.log('Assignment fetched successfully');
-    helper.logger.info(
-      'Assignment fetched successfully.',
-      req.params.id,
-      'details-',
-      result
-    );
-
+    helper.logger.info('Assignment fetched successfully.-', result);
     return res
       .status(200)
       .json({ message: 'Assignment fetched successfully', assignment: result });
@@ -492,7 +486,7 @@ const putAssignmentInfo = async (req, res) => {
       UpdatedData: {
         name: req.body.name,
         points: req.body.points,
-        num_of_attempts: req.body.num_of_attempts,
+        num_of_attempts: req.body.num_of_attemps,
         deadline: deadlineDate.toISOString(),
       },
     });
@@ -555,7 +549,7 @@ const deleteAssignmentInfo = async (req, res) => {
       if (ownerCheck !== idValue) {
         helper.logger.error(
           'Forbidden-Assignment belongs to another User-Check(s) failed. - ',
-          req.params.id
+          id
         );
 
         return res.status(403).json({
@@ -570,8 +564,7 @@ const deleteAssignmentInfo = async (req, res) => {
     // Perform the delete
     await existingAssignment.destroy();
     helper.logger.info(
-      'Assignment deleted successfully - Assignment ID -',
-      req.params.id
+      `Assignment deleted successfully - Assignment ID: ${req.params.id}`
     );
     return res.status(204).end();
   } catch (err) {
