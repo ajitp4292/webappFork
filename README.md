@@ -1,7 +1,7 @@
 # webapp
 
 CSYE6225 - webapp
-Name: AjitPatil
+Name: Ajit Patil
 NEUID:002737058
 # webapp
 
