@@ -37,7 +37,7 @@ const createNewSubmission = async (req, res) => {
 
   // Validate if submission_url is a valid URL using axios.head
   // 3. url validator
-  try {
+  /*try {
     const response = await axios.head(req.body.submission_url);
 
     // Assuming a successful HTTP HEAD request means the URL is valid and accessible
@@ -52,7 +52,7 @@ const createNewSubmission = async (req, res) => {
     return res
       .status(400)
       .json({ error: 'Invalid submission URL or unable to access' });
-  }
+  }*/
 
   //Validation for Unwanted Fields
   const allowedFields = ['submission_url'];
