@@ -1,4 +1,4 @@
-const { Account, Assignment } = require('../Models/association');
+const { Account, Assignment, Submission } = require('../Models/association');
 const helper = require('../utils/helper');
 
 const {
@@ -542,6 +542,22 @@ const deleteAssignmentInfo = async (req, res) => {
         message: 'Bad Request-Assignment not found',
       });
     } else if (existingAssignment) {
+      // Check if there are submissions associated with this assignment
+      const submissionsCount = await Submission.count({
+        where: { assignment_id: existingAssignment.id },
+      });
+
+      if (submissionsCount > 0) {
+        helper.logger.error(
+          'Bad Request - Cannot delete assignment with associated submissions.'
+        );
+
+        return res.status(400).json({
+          message:
+            'Bad Request - Cannot delete assignment with associated submissions.',
+        });
+      }
+
       let { userName } = getDecryptedCreds(req.headers.authorization);
       //console.log('Email of User' + ' ' + userName);
       let idValue = await validUserId(userName);

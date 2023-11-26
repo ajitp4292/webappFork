@@ -112,11 +112,11 @@ const createNewSubmission = async (req, res) => {
     } else if (existingAssignment) {
       let { userName } = getDecryptedCreds(req.headers.authorization);
       //console.log('Email of User' + ' ' + userName);
-      let idValue = await validUserId(userName);
-      let ownerCheck = existingAssignment.accountId;
+      //let idValue = await validUserId(userName);
+      //let ownerCheck = existingAssignment.accountId;
       let assignDeadline = existingAssignment.deadline;
       const currentDate = new Date();
-      if (ownerCheck !== idValue) {
+      /*if (ownerCheck !== idValue) {
         helper.logger.error(
           'Forbidden-Assignment belongs to another User-Check(s) failed. - ',
           req.params.id
@@ -124,7 +124,7 @@ const createNewSubmission = async (req, res) => {
         return res.status(403).json({
           message: 'Forbidden-Assignment belongs to another User',
         });
-      }
+      }*/
 
       if (currentDate > new Date(assignDeadline)) {
         // Submission Deadline has passed
