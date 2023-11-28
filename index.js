@@ -32,6 +32,13 @@ app.use('/v1/assignments', assignment);
 app.use('/healthz', healthzCheck);
 app.patch('/*', (req, res) => {
   helper.logger.info('Method Not Allowed');
+
+  return res.status(405).json({
+    message: 'Method Not Allowed',
+  });
+});
+app.options('/*', (req, res) => {
+  helper.logger.info('Method Not Allowed');
   return res.status(405).json({
     message: 'Method Not Allowed',
   });
