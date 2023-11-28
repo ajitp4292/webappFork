@@ -23,6 +23,8 @@ router.post(
   submission.createNewSubmission
 );
 router.post('/:id/submission/*', helper.invalidPath);
+router.get('/:id/submission/', helper.invalidPath);
+router.get('/:id/submission/*', helper.invalidPath);
 router.put('/*', helper.invalidPath, helper.invalidPath);
 router.delete('/:id', helper.aAuthCheck, assignment.deleteAssignmentInfo);
 router.delete('/*', helper.invalidPath);
