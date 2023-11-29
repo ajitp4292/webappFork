@@ -57,7 +57,7 @@ const createNewSubmission = async (req, res) => {
     );
     return res
       .status(400)
-      .json({ error: 'The URL does not have a .zip extension.' });
+      .json({ message: 'The URL does not have a .zip extension.' });
   }
 
   //Validation for Unwanted Fields
