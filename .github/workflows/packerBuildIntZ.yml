@@ -1,4 +1,4 @@
-name: Integration & AMI-Build
+name: Integration,AMI-Build & CD
 
 on:
   pull_request:
@@ -93,30 +93,54 @@ jobs:
           AMI_ID=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2)
           # AMI_ID="sample_ami_id"
           echo "AMI_ID=$AMI_ID" >> $GITHUB_OUTPUT
-
+          
+  continuous_deployment:
+    needs: build_packer_ami
+    runs-on: ubuntu-latest
+    steps:
       - name: Authenticate AWS CLI
-        run: aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }} && aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }} && aws configure set default.region us-east-1  
- 
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }} && aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }} && aws configure set default.region us-east-1
+
       - name: Set AWS Demo credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO}}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
           aws-region: us-east-1
-          
-      - name: Copying ami Artifacts and Launching Template
+
+      - name: Copying AMI Artifacts and Launching Template
         run: |
           pwd
           ls
           latestAmi=$(aws ec2 describe-images --filters "Name=owner-id,Values=838458155220" --query "sort_by(Images, &CreationDate)[-1].[ImageId]" --output "text")
-          echo "latest ami:"
+          echo "latest AMI:"
           echo $latestAmi
           aws ec2 create-launch-template-version --launch-template-name launchEc2 --launch-template-data "ImageId=$latestAmi" --source-version 1
         env:
           AWS_REGION: us-east-1
-          
+
       - name: Instance Refresh
         run: |
           aws autoscaling start-instance-refresh --auto-scaling-group-name csye6225Asg --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}' --desired-configuration '{"LaunchTemplate":{"LaunchTemplateName": "launchEc2" , "Version": "$Latest"}}'
         env:
           AWS_REGION: us-east-1
+
+      - name: Wait for Instance Refresh to Complete
+        run: |
+          while true; do
+            refreshStatus=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name csye6225Asg --query 'InstanceRefreshes[0].Status' --output text)
+            if [ "$refreshStatus" = "Successful" ]; then
+              echo "Instance Refresh completed successfully!"
+              break
+            elif [ "$refreshStatus" = "Failed" ]; then
+              echo "Instance Refresh failed!"
+              exit 1
+            else
+              echo "Waiting for Instance Refresh to complete..."
+              sleep 60
+            fi
+          done
+        env:
+          AWS_REGION: us-east-1
+      
