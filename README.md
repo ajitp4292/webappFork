@@ -1,5 +1,5 @@
 - LATEST CLOUD NATIVE WEB APPLICATION PROJECT
-<img src="CSYE6225 - Ajit.png"/>
+<img src="CSYE6225 - CloudNativeWebApp.jpg"/>
 
 # webapp
 
